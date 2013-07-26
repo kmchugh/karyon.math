@@ -50,15 +50,14 @@ public class SparseDoubleVector
         /**
          * Creates a new ArrayMarker
          * @param tnDataIndex the index of the list of list of doubles (internal list pointer)
-         * @param tnItemIndex the index of the value within the internal list
          * @param tnStartIndex the index that the secondary array index starts at (reference index)
          */
         public ArrayMarker(int tnDataIndex, int tnItemIndex, int tnStartIndex)
         {
             m_nDataIndex = tnDataIndex;
-            m_nItemIndex = tnItemIndex;
             m_nStartIndex = tnStartIndex;
             m_nEndIndex = tnStartIndex;
+            m_nItemIndex = tnItemIndex;
         }
 
         /**
@@ -78,8 +77,8 @@ public class SparseDoubleVector
         public synchronized boolean add(double tnValue)
         {
             double[] laArray = getArray();
-            laArray[m_nEndIndex++] = tnValue;
-            if (m_nEndIndex == laArray.length)
+            laArray[(m_nEndIndex++ - m_nStartIndex) + m_nItemIndex] = tnValue;
+            if (m_nEndIndex - m_nStartIndex + m_nItemIndex == laArray.length)
             {
                 // Need to resize the array
                 m_aData[m_nDataIndex] = java.util.Arrays.copyOf(laArray, (int)(Math.ceil(laArray.length / m_nFillFactor)));
@@ -89,20 +88,43 @@ public class SparseDoubleVector
         }
 
         /**
+         * Gets the full capacity available to this marker
+         * @return the capacity available to this marker
+         */
+        public int getCapacity()
+        {
+            return getArray().length - m_nStartIndex;
+        }
+
+        /**
+         * Appends the value at the specified index.  This will result
+         * in a shift of all values after tnIndex
+         * @param tnIndex the index to append at
+         * @param tnValue the value to add
+         */
+        public synchronized void add(long tnIndex, double tnValue)
+        {
+            int lnOffset = (int)(tnIndex - m_nStartIndex);
+            double[] laArray = getArray();
+            java.lang.System.arraycopy(laArray, lnOffset, laArray, lnOffset +1, laArray.length-lnOffset-1);
+            laArray[lnOffset]=tnValue;
+        }
+
+        /**
          * Gets the value at the index specified, if the index is out of bounds, returns 0
          * @param tnIndex the index to get the value of
          * @return the value at the specified index, or 0 if the index did not exist
          */
         public double get(long tnIndex)
         {
-            int lnOffset = (int)(tnIndex - m_nItemIndex);
+            int lnOffset = (int)(tnIndex - m_nStartIndex);
             double[] laArray = getArray();
             return laArray.length > lnOffset ? laArray[lnOffset] : 0;
         }
 
         public double set(long tnIndex, double tnValue)
         {
-            int lnOffset = (int)(tnIndex - m_nItemIndex);
+            int lnOffset = (int)(tnIndex - m_nStartIndex);
             double[] laArray = getArray();
             if (laArray.length > lnOffset)
             {
@@ -142,10 +164,11 @@ public class SparseDoubleVector
     }
 
 
-    private long m_nCapacity;
+    private int m_nCapacity;
     private float m_nFillFactor;
     private boolean m_lHorizontal;
     private double[][] m_aData;
+    private int m_nDataPointer;
     private karyon.collections.List<ArrayMarker> m_oMarkers;
 
 
@@ -162,7 +185,7 @@ public class SparseDoubleVector
      * @param tnCapacity the initial capacity of the Sparse vector
      * @param tnFillFactor the fill factor for the sparse vector
      */
-    public SparseDoubleVector(long tnCapacity, float tnFillFactor, boolean tlIsHorizontal)
+    public SparseDoubleVector(int tnCapacity, float tnFillFactor, boolean tlIsHorizontal)
     {
         if (tnCapacity <= 0)
         {
@@ -200,7 +223,7 @@ public class SparseDoubleVector
     public SparseDoubleVector(double[] taData, boolean tlIsHorizontal)
     {
         this(taData.length == 0 ? 10 : (int)Math.ceil(taData.length / 0.75f), 0.75f, tlIsHorizontal);
-        m_aData = new double[1][(int)m_nCapacity];
+        m_aData = new double[1][m_nCapacity];
         m_oMarkers = new karyon.collections.List<ArrayMarker>();
         ArrayMarker loMarker = new ArrayMarker(0, 0, 0);
         m_oMarkers.add(loMarker);
@@ -245,7 +268,7 @@ public class SparseDoubleVector
 
     /**
      * This has been marked as deprecated to remind the developer that addDouble
-     * should be used instead                                                                   s
+     * should be used instead
      * @param tnDouble the double to add to the end of the array
      * @return true if the array changed as a result of this call
      */
@@ -361,15 +384,44 @@ public class SparseDoubleVector
      * @param tnValue the new value
      * @return the old value or 0 if there was no old value
      */
-    public double setDouble(int tnIndex, double tnValue)
+    public double setDouble(long tnIndex, double tnValue)
     {
         return getMarkerWithIndex(tnIndex).set(tnIndex, tnValue);
     }
 
+    /**
+     * Marked as deprecated to remind the developer to use addDouble instead
+     * @param tnIndex the index to add the value at
+     * @param tnValue the value to add
+     */
     @Override
-    public void add(int i, Double aDouble)
+    @Deprecated
+    public void add(int tnIndex, Double tnValue)
     {
-        //To change body of implemented methods use File | Settings | File Templates.
+        addDouble(tnIndex, tnValue);
+    }
+
+    /**
+     * Adds the value at the specified index, this will
+     * shift all of the items after tnIndex
+     * @param tnIndex the index to insert the value at
+     * @param tnValue the value to insert
+     */
+    public synchronized void addDouble(long tnIndex, double tnValue)
+    {
+        ArrayMarker loMarker = getMarkerWithIndex(tnIndex);
+
+        if ((loMarker.m_nStartIndex + loMarker.getCapacity() >= tnIndex || loMarker.m_nEndIndex+1 >= tnIndex))
+        {
+            // The value can be added inside, or appended to the marker
+        }
+        else
+        {
+            // A new marker needs to be created
+            ArrayMarker loNewMarker = new ArrayMarker(0, loMarker.m_nEndIndex, (int)tnIndex);
+            m_oMarkers.add(loNewMarker);
+            loNewMarker.add(tnValue);
+        }
     }
 
 

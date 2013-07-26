@@ -139,9 +139,9 @@ public class SparseDoubleVectorTest
         loVec.addAllDouble(laDouble);
         assertEquals(6, loVec.size());
 
-        //loVec.addDouble(100, 1);
-        //assertEquals(101, loVec.size());
-        //loVec.addDouble(2);
-        //assertEquals(102, loVec.size());
+        loVec.addDouble(100, 1);
+        assertEquals(101, loVec.size());
+        loVec.addDouble(2);
+        assertEquals(102, loVec.size());
     }
 }
