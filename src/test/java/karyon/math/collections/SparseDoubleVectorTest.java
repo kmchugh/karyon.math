@@ -144,4 +144,43 @@ public class SparseDoubleVectorTest
         loVec.addDouble(2);
         assertEquals(102, loVec.size());
     }
+
+    @Test
+    public void testCount() throws Exception
+    {
+        startMarker();
+
+        SparseDoubleVector loVec = new SparseDoubleVector();
+        assertEquals(0, loVec.count());
+        loVec.addDouble(1);
+        assertEquals(1, loVec.count());
+        double[] laDouble = new double[]{1,2,3,4,5};
+        loVec.addAllDouble(laDouble);
+        assertEquals(6, loVec.count());
+
+        loVec.addDouble(100, 1);
+        assertEquals(7, loVec.count());
+        loVec.addDouble(2);
+        assertEquals(8, loVec.count());
+    }
+
+    @Test
+    public void testAddAllDouble() throws Exception
+    {
+        startMarker();
+        double[] laDouble = new double[]{1,2,3,4,5};
+        SparseDoubleVector loVec = new SparseDoubleVector();
+        assertEquals(0, loVec.size());
+
+        loVec.addAllDouble(laDouble);
+        assertEquals(5, loVec.size());
+
+        loVec.addAllDouble(laDouble);
+        assertEquals(10, loVec.size());
+
+        for(int i=0; i<loVec.size(); i++)
+        {
+            assertEquals(laDouble[i%5], loVec.getDouble(i), 0);
+        }
+    }
 }

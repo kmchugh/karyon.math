@@ -152,7 +152,8 @@ public class SparseDoubleVector
             if (laArray.length - m_nEndIndex <= taValues.length)
             {
                 // Need to resize the array
-                laArray = java.util.Arrays.copyOf(laArray, (int)((laArray.length + taValues.length) / m_nFillFactor));
+                m_aData[m_nDataIndex] = java.util.Arrays.copyOf(laArray, (int)Math.ceil((laArray.length + taValues.length) / m_nFillFactor));
+                laArray = getArray();
                 // TODO: When the array is too large (larger than max int) need to use multiple arrays
                 m_nCapacity = laArray.length;
             }
@@ -168,7 +169,6 @@ public class SparseDoubleVector
     private float m_nFillFactor;
     private boolean m_lHorizontal;
     private double[][] m_aData;
-    private int m_nDataPointer;
     private karyon.collections.List<ArrayMarker> m_oMarkers;
 
 
@@ -279,10 +279,29 @@ public class SparseDoubleVector
         return addDouble(tnDouble);
     }
 
+    /**
+     * Returns the full size of the array, this is the index of the last item stored +1.
+     * To find the number of concrete elements in the array use count
+     * @return the full size of the array
+     */
     @Override
     public int size()
     {
         return m_oMarkers == null ? 0 : m_oMarkers.get(m_oMarkers.size()-1).m_nEndIndex;
+    }
+
+    /**
+     * Gets the total number of elements in the array
+     * @return the number of concrete elements in the array
+     */
+    public long count()
+    {
+        if (m_oMarkers == null)
+        {
+            return 0;
+        }
+        ArrayMarker loMarker = m_oMarkers.get(m_oMarkers.size()-1);
+        return loMarker.m_nItemIndex + (loMarker.m_nEndIndex - loMarker.m_nStartIndex);
     }
 
     /**
@@ -304,6 +323,46 @@ public class SparseDoubleVector
     {
         return m_oMarkers.get(m_oMarkers.size()-1).add(taValues);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Gets the double at the specified position.
