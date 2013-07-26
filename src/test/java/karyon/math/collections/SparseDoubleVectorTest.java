@@ -82,6 +82,7 @@ public class SparseDoubleVectorTest
     @Test
     public void testIsHorizontal() throws Exception
     {
+        startMarker();
         assertTrue(new SparseDoubleVector(new double[0], true).isHorizontal());
         assertFalse(new SparseDoubleVector(new double[0], false).isHorizontal());
     }
@@ -89,6 +90,7 @@ public class SparseDoubleVectorTest
     @Test
     public void testGetCapacity() throws Exception
     {
+        startMarker();
         assertEquals(10, new SparseDoubleVector(10,0.75f, true).getCapacity());
         assertEquals(20, new SparseDoubleVector(20,0.75f, true).getCapacity());
     }
@@ -96,6 +98,7 @@ public class SparseDoubleVectorTest
     @Test
     public void testIsEmpty() throws Exception
     {
+        startMarker();
         assertTrue(new SparseDoubleVector().isEmpty());
         assertTrue(new SparseDoubleVector(new double[0]).isEmpty());
         assertTrue(new SparseDoubleVector(new double[]{}).isEmpty());
@@ -105,6 +108,7 @@ public class SparseDoubleVectorTest
     @Test
     public void testAddDouble() throws Exception
     {
+        startMarker();
         double[] laDouble = new double[]{1,2,3,4,5};
         SparseDoubleVector loVec = new SparseDoubleVector(laDouble);
         assertEquals(5, loVec.size());
@@ -119,7 +123,25 @@ public class SparseDoubleVectorTest
 
         for(int i=0; i<9; i++)
         {
-            assertEquals(i+i, loVec.getDouble(i), 0);
+            assertEquals(i+1, loVec.getDouble(i), 0);
         }
+    }
+
+    @Test
+    public void testSize() throws Exception
+    {
+        startMarker();
+        SparseDoubleVector loVec = new SparseDoubleVector();
+        assertEquals(0, loVec.size());
+        loVec.addDouble(1);
+        assertEquals(1, loVec.size());
+        double[] laDouble = new double[]{1,2,3,4,5};
+        loVec.addAllDouble(laDouble);
+        assertEquals(6, loVec.size());
+
+        //loVec.addDouble(100, 1);
+        //assertEquals(101, loVec.size());
+        //loVec.addDouble(2);
+        //assertEquals(102, loVec.size());
     }
 }

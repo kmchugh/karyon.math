@@ -82,10 +82,41 @@ public class SparseDoubleVector
             if (m_nEndIndex == laArray.length)
             {
                 // Need to resize the array
-                laArray = java.util.Arrays.copyOf(laArray, (int)(laArray.length * m_nFillFactor));
-                m_nCapacity = laArray.length;
+                m_aData[m_nDataIndex] = java.util.Arrays.copyOf(laArray, (int)(Math.ceil(laArray.length / m_nFillFactor)));
+                m_nCapacity = m_aData[m_nDataIndex].length;
             }
             return true;
+        }
+
+        /**
+         * Gets the value at the index specified, if the index is out of bounds, returns 0
+         * @param tnIndex the index to get the value of
+         * @return the value at the specified index, or 0 if the index did not exist
+         */
+        public double get(long tnIndex)
+        {
+            int lnOffset = (int)(tnIndex - m_nItemIndex);
+            double[] laArray = getArray();
+            return laArray.length > lnOffset ? laArray[lnOffset] : 0;
+        }
+
+        public double set(long tnIndex, double tnValue)
+        {
+            int lnOffset = (int)(tnIndex - m_nItemIndex);
+            double[] laArray = getArray();
+            if (laArray.length > lnOffset)
+            {
+                // The offset exists
+                double lnReturn = laArray[lnOffset];
+                laArray[lnOffset] = tnValue;
+                return lnReturn;
+            }
+            else
+            {
+                // The offset does not exist
+                add(tnIndex, tnValue);
+                return 0;
+            }
         }
 
         /**
@@ -208,30 +239,13 @@ public class SparseDoubleVector
      */
     public boolean addDouble(double tnDouble)
     {
-        if (m_aData == null)
-        {
-            m_aData = new double[][]{{tnDouble}};
-            if (m_oMarkers == null)
-            {
-                m_oMarkers = new karyon.collections.List<ArrayMarker>();
-            }
-        }
-        else
-        {
-            // Get the last marker and add to it's array
-            if (m_oMarkers == null)
-            {
-                m_oMarkers = new karyon.collections.List<ArrayMarker>();
-                m_oMarkers.add(new ArrayMarker(0, 0, 0));
-            }
-            m_oMarkers.get(m_oMarkers.size() -1).add(tnDouble);
-        }
-        return true;
+        // Always add to the last marker
+        return m_oMarkers.get(m_oMarkers.size()-1).add(tnDouble);
     }
 
     /**
      * This has been marked as deprecated to remind the developer that addDouble
-     * should be used instead
+     * should be used instead                                                                   s
      * @param tnDouble the double to add to the end of the array
      * @return true if the array changed as a result of this call
      */
@@ -248,17 +262,25 @@ public class SparseDoubleVector
         return m_oMarkers == null ? 0 : m_oMarkers.get(m_oMarkers.size()-1).m_nEndIndex;
     }
 
+    /**
+     * Use addAllDouble instead
+     */
+    @Override
+    @Deprecated
+    public boolean addAll(Collection<? extends Double> taValues)
+    {
+        throw new UnsupportedOperationException("Use addAllDouble instead");
+    }
 
-
-
-
-
-
-
-
-
-
-
+    /**
+     * Appends all of the values to the end of the array
+     * @param taValues the values to add
+     * @return true if the values have been added
+     */
+    public boolean addAllDouble(double[] taValues)
+    {
+        return m_oMarkers.get(m_oMarkers.size()-1).add(taValues);
+    }
 
     /**
      * Gets the double at the specified position.
@@ -267,15 +289,8 @@ public class SparseDoubleVector
      */
     public double getDouble(long tnIndex)
     {
-        return m_aData == null ? 0 : m_aData[0][(int)tnIndex];
+        return getMarkerWithIndex(tnIndex).get(tnIndex);
     }
-
-
-
-
-
-
-
 
     /**
      * This has been marked as deprecated to remind the developer that
@@ -289,6 +304,82 @@ public class SparseDoubleVector
     {
         return getDouble(tnIndex);
     }
+
+
+    /**
+     * Gets the marker that should contain the index specified
+     * @param tnIndex the index of the marker to find
+     * @return the marker which contains the information about the index specified
+     */
+    private ArrayMarker getMarkerWithIndex(long tnIndex)
+    {
+        int lnCount = 0;
+        for (ArrayMarker loMarker : m_oMarkers)
+        {
+            if (loMarker.m_nStartIndex > tnIndex)
+            {
+                // return the previous marker
+                return m_oMarkers.get(lnCount-1);
+            }
+            lnCount ++;
+        }
+        // return the last marker
+        return m_oMarkers.get(m_oMarkers.size()-1) ;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Marked as deprecated to remind the developer to use setDouble instead
+     * @param tnIndex the index to update the value at
+     * @param tnValue the value to update to
+     * @return the old value or zero if there was no previous value
+     */
+    @Override
+    @Deprecated
+    public Double set(int tnIndex, Double tnValue)
+    {
+        return setDouble(tnIndex, tnValue);
+    }
+
+    /**
+     * Updates the value at tnIndex with tnValue
+     * @param tnIndex the index to update
+     * @param tnValue the new value
+     * @return the old value or 0 if there was no old value
+     */
+    public double setDouble(int tnIndex, double tnValue)
+    {
+        return getMarkerWithIndex(tnIndex).set(tnIndex, tnValue);
+    }
+
+    @Override
+    public void add(int i, Double aDouble)
+    {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+
+
+
+
+
+
+
+
 
     @Override
     public boolean contains(Object o)
@@ -328,11 +419,7 @@ public class SparseDoubleVector
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public boolean addAll(Collection<? extends Double> doubles)
-    {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+
 
     @Override
     public boolean addAll(int i, Collection<? extends Double> doubles)
@@ -360,17 +447,7 @@ public class SparseDoubleVector
 
 
 
-    @Override
-    public Double set(int i, Double aDouble)
-    {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
-    @Override
-    public void add(int i, Double aDouble)
-    {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     @Override
     public Double remove(int i)
