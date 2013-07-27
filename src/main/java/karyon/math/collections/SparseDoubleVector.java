@@ -360,7 +360,7 @@ public class SparseDoubleVector
 
 
 
-
+    // TODO: Everything below here is to be implemented/tested
 
 
 
@@ -540,6 +540,11 @@ public class SparseDoubleVector
 
     @Override
     public boolean removeAll(Collection<?> objects)
+    {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean replaceAll(Collection<?> objects)
     {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
