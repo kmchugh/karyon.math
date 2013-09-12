@@ -1,5 +1,6 @@
 package karyon.math.collections;
 
+import karyon.IRunnable;
 import karyon.exceptions.InvalidParameterException;
 import karyon.testing.KaryonTest;
 import org.junit.Test;
@@ -27,24 +28,21 @@ public class SparseDoubleVectorTest
     public void testConstructor_long_float_boolean() throws Exception
     {
         startMarker();
-        assertTrue(
-                willThrow(InvalidParameterException.class, new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        SparseDoubleVector loVec = new SparseDoubleVector(0, .75f, true);
-                    }
-                }));
+        assertWillThrow(InvalidParameterException.class, new IRunnable() {
+            @Override
+            public void run() throws Throwable
+            {
+                SparseDoubleVector loVec = new SparseDoubleVector(0, .75f, true);
+            }
+        });
 
-        assertTrue(
-                willThrow(InvalidParameterException.class, new Runnable(){
-                    @Override
-                    public void run()
-                    {
-                        SparseDoubleVector loVec = new SparseDoubleVector(10, 1.5f, true);
-                    }
-                }));
+        assertWillThrow(InvalidParameterException.class, new IRunnable() {
+            @Override
+            public void run() throws Throwable
+            {
+                SparseDoubleVector loVec = new SparseDoubleVector(10, 1.5f, true);
+            }
+        });
 
         SparseDoubleVector loVec = new SparseDoubleVector(10, .75f, true);
         assertTrue(loVec.isHorizontal());
