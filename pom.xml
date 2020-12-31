@@ -18,7 +18,7 @@
 
         <!-- Plugin related properties -->
         <uk.co.icatalyst.karyon.version>0.3-SNAPSHOT</uk.co.icatalyst.karyon.version>
-        <junit.version>4.11</junit.version>
+        <junit.version>4.13.1</junit.version>
         <org.apache.maven.plugins.maven.compiler.plugin.version>3.0</org.apache.maven.plugins.maven.compiler.plugin.version>
         <org.apache.maven.plugins.maven.deploy.plugin.version>2.7</org.apache.maven.plugins.maven.deploy.plugin.version>
         <com.github.github.site.maven.plugin.version>0.8</com.github.github.site.maven.plugin.version>
